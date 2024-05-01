@@ -28,38 +28,38 @@ joystick.__index = joystick
 local function _new(_x, _y, _radius, _fallowClick, _fallowFinger, _onlyNormal)
     _radius = _radius or 64
 
-    local newJoystick = setmetatable({}, joystick)
-    newJoystick.x = _x
-    newJoystick.y = _y
-    newJoystick.radius = _radius
+    local self = setmetatable({}, joystick)
+    self.x = _x
+    self.y = _y
+    self.radius = _radius
 
-    newJoystick.original = {}
-    newJoystick.original.x = _x
-    newJoystick.original.y = _y
+    self.original = {}
+    self.original.x = _x
+    self.original.y = _y
 
-    newJoystick.activeArea = {}
-    newJoystick.activeArea.x = 0
-    newJoystick.activeArea.y = 0
-    newJoystick.activeArea.w = love.graphics.getWidth()
-    newJoystick.activeArea.h = love.graphics.getHeight()
+    self.activeArea = {}
+    self.activeArea.x = 0
+    self.activeArea.y = 0
+    self.activeArea.w = love.graphics.getWidth()
+    self.activeArea.h = love.graphics.getHeight()
 
-    newJoystick.onlyNormal = _onlyNormal or false
-    newJoystick.fallowFinger = _fallowFinger or true
-    newJoystick.fallowClick = _fallowClick or true
+    self.onlyNormal = _onlyNormal or false
+    self.fallowFinger = _fallowFinger or true
+    self.fallowClick = _fallowClick or true
 
-    newJoystick.pressed = false
-    newJoystick.hovered = false
+    self.pressed = false
+    self.hovered = false
 
-    newJoystick.paddler = {}
-    newJoystick.paddler.x = _x
-    newJoystick.paddler.y = _y
-    newJoystick.paddler.radius = _radius/2
+    self.paddler = {}
+    self.paddler.x = _x
+    self.paddler.y = _y
+    self.paddler.radius = _radius/2
 
-    newJoystick.normalized = {}
-    newJoystick.normalized.x = 0
-    newJoystick.normalized.y = 0
+    self.normalized = {}
+    self.normalized.x = 0
+    self.normalized.y = 0
     
-    return newJoystick
+    return self
 end
 
 function joystick:draw()
@@ -75,13 +75,12 @@ end
 
 function joystick:update(deltaTime)
     local touches = love.touch.getTouches()
-    if #touches == 0 then
-        self.hovered = false
-    end
 
+    local active = false
     for t = 1, #touches, 1 do
         local touchX, touchY = love.touch.getPosition(touches[t])
         if collision_pointRectangle({x = touchX, y = touchY}, self.activeArea) then
+            active = true
             self.pressed = not self.hovered 
             self.hovered = true
 
@@ -111,6 +110,11 @@ function joystick:update(deltaTime)
         end
     end
 
+    if not active then
+        self.pressed = false
+        self.hovered = false
+    end
+
     if not self.hovered then
         self.normalized.x, self.normalized.y = 0, 0
         self.x, self.y = self.original.x, self.original.y
@@ -121,8 +125,7 @@ function joystick:update(deltaTime)
 end
 
 function joystick:setJoystickArea(_x, _y, _w, _h)
-    self.actveArea = {}
-    self.actveArea.x, self.actveArea.y, self.actveArea.w, self.actveArea.h = _x, _y, _w, _h
+    self.activeArea.x, self.activeArea.y, self.activeArea.w, self.activeArea.h = _x, _y, _w, _h
 end
 
 function joystick:setOnlyNormal(_onlyNormal)
